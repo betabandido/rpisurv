@@ -5,6 +5,7 @@ from google import get_credentials
 from googleapiclient import errors
 from googleapiclient.discovery import build
 from httplib2 import Http
+import os.path
 import yaml
 
 def _send_message(service, user_id, message):
@@ -60,7 +61,8 @@ def _build_service(credentials):
 
 class MotionNotifier:
   def __init__(self, settings):
-    with open('mail_secrets.yaml') as f:
+    basepath = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(basepath, 'mail_secrets.yaml')) as f:
       doc = yaml.load(f)
       self.MAIL_FROM = doc['from']
       self.MAIL_TO = doc['to']
