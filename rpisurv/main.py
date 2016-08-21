@@ -1,6 +1,6 @@
 from backup import upload_jpeg_file
 from motion import MotionDetector
-import os.path
+import os
 from PIL import Image
 from picamera import PiCamera
 from picamera.array import PiRGBArray
@@ -42,6 +42,7 @@ for frame in camera.capture_continuous(
         'motion{0:04d}.jpg'.format(image_count))
     img.save(filename)
     upload_jpeg_file(filename)
+    os.remove(filename)
     image_count += 1
 
   raw_capture.truncate(0)
