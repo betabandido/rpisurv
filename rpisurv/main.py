@@ -35,15 +35,18 @@ for frame in camera.capture_continuous(
     use_video_port=True):
   if motion_detector.detect_motion(frame.array):
     print('*** MOTION DETECTED ***')
-    motion_notifier.send_notification()
-    img = Image.fromarray(frame.array, 'RGB')
-    filename = os.path.join(
-        settings['backup']['output_path'],
-        'motion{0:04d}.jpg'.format(image_count))
-    img.save(filename)
-    upload_jpeg_file(filename)
-    os.remove(filename)
-    image_count += 1
+    try:
+      motion_notifier.send_notification()
+      img = Image.fromarray(frame.array, 'RGB')
+      filename = os.path.join(
+          settings['backup']['output_path'],
+          'motion{0:04d}.jpg'.format(image_count))
+      img.save(filename)
+      upload_jpeg_file(filename)
+      os.remove(filename)
+      image_count += 1
+    except Exception, error:
+      print('An error occurred: {0}'.format(error))
 
   raw_capture.truncate(0)
 
