@@ -2,6 +2,7 @@ import base64
 from datetime import datetime
 from email.mime.text import MIMEText
 from google import get_credentials
+from googleapiclient import errors
 from googleapiclient.discovery import build
 from httplib2 import Http
 import yaml
