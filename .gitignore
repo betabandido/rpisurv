@@ -87,3 +87,10 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Private data
+client_secrets.json
+mail_secrets.yaml
+
+# vim
+*.swp
