@@ -8,7 +8,8 @@ from sendmail import MotionNotifier
 import time
 import yaml
 
-with open('settings.yaml') as f:
+basepath = os.path.dirname(os.path.realpath(__file__))
+with open(os.path.join(basepath, 'settings.yaml')) as f:
   settings = yaml.load(f)
   print str(settings)
 

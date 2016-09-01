@@ -7,7 +7,10 @@ import os.path
 SCOPES = [
   'https://www.googleapis.com/auth/gmail.send',
   'https://www.googleapis.com/auth/drive.file']
-CLIENT_SECRET_FILE = 'client_secrets.json'
+basepath = os.path.dirname(os.path.realpath(__file__))
+CLIENT_SECRET_FILE = os.path.join(
+    basepath,
+    'client_secrets.json')
 APPLICATION_NAME = 'rpisurv'
 
 def get_credentials(flags=None):
