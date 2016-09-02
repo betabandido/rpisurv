@@ -1,0 +1,17 @@
+.flash {
+  background: #cee5f5;
+  padding: 0.5em;
+}
+
+.container {
+  margin: auto;
+  width: 80%;
+}
+
+.entry {
+  display: block;
+  margin: auto;
+  text-align: center;
+  width: 80%;
+}
+

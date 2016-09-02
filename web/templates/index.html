@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="entry">
+  Camera is {{ camera_state }}
+</div>
+
+<div class="entry">
+  <a href="{{ url_for('settings_form') }}">Change settings</a>
+</div>
+{% endblock %}
+

@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block body %}
+<script>
+function cancel() {
+  window.location.replace("{{ url_for('index') }}")
+}
+</script>
+
+<form action="{{ url_for('update_settings') }}" method="post">
+  <div class="entry">
+    <input type="checkbox" name="enable-camera" value="on"{{ camera_state }}> Enable camera
+  </div>
+  <!--
+  <div class="entry">
+    Recipients: <input type="text" name="recipients">
+  </div>
+  <div class="entry">
+    Notification limit: <input type="number" name="notification-limit">
+  </div>
+  -->
+  <div class="entry">
+    <input type="button" value="Cancel" onclick="cancel()">
+    <input type="submit" value="Save">
+  </div>
+</form>
+{% endblock %}
+
