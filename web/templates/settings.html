@@ -8,8 +8,10 @@ function cancel() {
 
 <form action="{{ url_for('update_settings') }}" method="post">
   <div class="entry">
-    <input type="checkbox" name="enable-camera" value="on"{{ camera_state }}> Enable camera
+    <input type="checkbox" id="enable-camera" name="enable-camera" value="on"{{ camera_state }}>
+    <label for="enable-camera">Enable camera</label>
   </div>
+
   <!--
   <div class="entry">
     Recipients: <input type="text" name="recipients">
