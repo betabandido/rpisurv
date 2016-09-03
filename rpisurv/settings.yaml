@@ -15,7 +15,6 @@ backup:
   output_path: /tmp
 
 app:
-  out_path: /tmp/out.txt
-  err_path: /tmp/out.txt
+  out_path: /tmp
   pidfile_path: /tmp/rpisurv.pid
 

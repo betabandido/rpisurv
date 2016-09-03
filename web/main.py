@@ -48,7 +48,6 @@ def disable_camera():
     'python',
     rpisurv_path,
     'stop'])
-  os.remove(settings['pidfile_path'])
 
 def set_camera_state(state):
   if state == 'on':
