@@ -1,7 +1,7 @@
 from flask import Flask, flash, redirect, render_template, request, Response, url_for
 from functools import wraps
 from lockfile.pidlockfile import PIDLockFile
-import os.path
+import os
 import subprocess
 import yaml
 
@@ -48,6 +48,7 @@ def disable_camera():
     'python',
     rpisurv_path,
     'stop'])
+  os.remove(settings['pidfile_path'])
 
 def set_camera_state(state):
   if state == 'on':
