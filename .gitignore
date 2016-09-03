@@ -95,3 +95,6 @@ secrets.yaml
 
 # vim
 *.swp
+
+# misc
+web/static/latest.jpg

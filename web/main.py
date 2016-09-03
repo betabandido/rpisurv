@@ -3,6 +3,7 @@ from functools import wraps
 from lockfile.pidlockfile import PIDLockFile
 import os
 import subprocess
+import time
 import yaml
 
 basepath = os.path.dirname(os.path.realpath(__file__))
@@ -70,7 +71,15 @@ def current_camera_state():
 @app.route('/')
 @requires_auth
 def index():
-  return render_template('index.html', camera_state=current_camera_state())
+  try:
+    latest_time = time.ctime(os.path.getmtime(
+        os.path.join(basepath, 'static', 'latest.jpg')))
+  except Exception:
+    latest_time = ''
+
+  return render_template('index.html',
+      camera_state=current_camera_state(),
+      latest_time=latest_time)
 
 @app.route('/settings')
 @requires_auth

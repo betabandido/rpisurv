@@ -2,11 +2,20 @@
 {% block body %}
 
 <div class="entry">
+  <img src="static/latest.jpg">
+</div>
+
+<div class="entry">
+  {{ latest_time }}
+</div>
+
+<div class="entry">
   Camera is {{ camera_state }}
 </div>
 
 <div class="entry">
   <a href="{{ url_for('settings_form') }}">Change settings</a>
 </div>
+
 {% endblock %}
 

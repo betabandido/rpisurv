@@ -63,6 +63,8 @@ class Application:
         if terminated:
           break
 
+        self._save_frame(frame)
+
         if motion_detector.detect_motion(frame.array):
           print('*** MOTION DETECTED ***')
           try:
@@ -76,12 +78,25 @@ class Application:
             os.remove(filename)
             image_count += 1
           except Exception, error:
-            print('An error occurred: {0}'.format(error))
+            print('An error occurred: {}'.format(error))
 
         raw_capture.truncate(0)
 
     print('Exiting')
     sys.exit(0)
+
+  def _save_frame(self, frame):
+    try:
+      img = Image.fromarray(frame.array, 'RGB')
+      out_path = settings['app']['web_path']
+      if not os.path.isabs(out_path):
+        out_path = os.path.join(basepath, out_path)
+      filename = os.path.join(out_path, 'static', 'latest.jpg')
+      tmp_filename = '{}.part'.format(filename)
+      img.save(tmp_filename, 'jpeg')
+      os.rename(tmp_filename, filename)
+    except Exception, error:
+      print('Error saving frame: {}'.format(error))
 
 if __name__ == '__main__':
   import signal
