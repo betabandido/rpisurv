@@ -8,6 +8,8 @@ from httplib2 import Http
 import os.path
 import yaml
 
+from . import basepath
+
 def _send_message(service, user_id, message):
   """Send an email message.
 
@@ -24,10 +26,10 @@ def _send_message(service, user_id, message):
     message = service.users().messages().send(
         userId=user_id,
         body=message).execute()
-    print('Message sent: id={0}'.format(message['id']))
+    print('Message sent: id={}'.format(message['id']))
     return message
   except errors.HttpError, error:
-    print('An error occurred: {0}'.format(error))
+    print('An error occurred: {}'.format(error))
 
 def _create_message(sender, to, subject, text):
   """Create a message for an email.
@@ -61,7 +63,6 @@ def _build_service(credentials):
 
 class MotionNotifier:
   def __init__(self, settings):
-    basepath = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(basepath, 'mail_secrets.yaml')) as f:
       doc = yaml.load(f)
       self.MAIL_FROM = doc['from']

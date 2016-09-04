@@ -2,12 +2,12 @@ from flask import Flask, flash, redirect, render_template, request, Response, ur
 from functools import wraps
 from lockfile.pidlockfile import PIDLockFile
 import os
-import subprocess
+from subprocess import Popen
 import time
 import yaml
 
 basepath = os.path.dirname(os.path.realpath(__file__))
-rpisurv_path = os.path.realpath(os.path.join(basepath, '..', 'rpisurv', 'main.py'))
+rpisurv_path = os.path.realpath(os.path.join(basepath, '..'))
 
 with open(os.path.join(basepath, 'secrets.yaml')) as f:
   secrets = yaml.load(f)
@@ -37,18 +37,24 @@ def requires_auth(f):
   return decorated
 
 def enable_camera():
-  subprocess.check_call([
+  process = Popen([
     '/usr/bin/env',
     'python',
-    rpisurv_path,
-    'start'])
+    '-m',
+    'rpisurv.main',
+    'start'], cwd=rpisurv_path)
+  if process.wait() != 0:
+    raise CalledProcessError('Return code was not zero')
 
 def disable_camera():
-  subprocess.check_call([
+  process = Popen([
     '/usr/bin/env',
     'python',
-    rpisurv_path,
-    'stop'])
+    '-m',
+    'rpisurv.main',
+    'stop'], cwd=rpisurv_path)
+  if process.wait() != 0:
+    raise CalledProcessError('Return code was not zero')
 
 def set_camera_state(state):
   if state == 'on':
