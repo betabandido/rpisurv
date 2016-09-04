@@ -83,7 +83,6 @@ class Application:
         raw_capture.truncate(0)
 
     print('Exiting')
-    sys.exit(0)
 
   def _save_frame(self, frame):
     try:
@@ -102,21 +101,6 @@ if __name__ == '__main__':
   import signal
   app = Application()
   daemon_runner = runner.DaemonRunner(app)
-  daemon_pid = daemon_runner.pidfile.read_pid()
   daemon_runner.daemon_context.signal_map[signal.SIGTERM] = terminate_daemon
   daemon_runner.do_action()
-
-  sleep(1)
-
-  # This seems necessary to kill threads created by libbcm_host
-  import psutil
-  parent = psutil.Process(daemon_pid)
-  print('Parent process: {}'.format(parent.pid))
-  for t in parent.threads():
-    if t.id != parent.pid:
-      try:
-        print('Killing {}'.format(t.id))
-        os.kill(t.id, signal.SIGKILL)
-      except Exception:
-        pass
 
