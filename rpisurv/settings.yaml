@@ -14,3 +14,8 @@ notification:
 backup:
   output_path: /tmp
 
+app:
+  out_path: /tmp
+  pidfile_path: /tmp/rpisurv.pid
+  web_path: ../web
+

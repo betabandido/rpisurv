@@ -91,6 +91,10 @@ ENV/
 # Private data
 client_secrets.json
 mail_secrets.yaml
+secrets.yaml
 
 # vim
 *.swp
+
+# misc
+web/static/latest.jpg
