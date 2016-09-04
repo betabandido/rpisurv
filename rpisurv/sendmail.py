@@ -87,9 +87,7 @@ class MotionNotifier:
     self.last_time = curr_time
 
 if __name__ == '__main__':
-  with open('settings.yaml') as f:
-    settings = yaml.load(f)
-
+  from . import settings
   notifier = MotionNotifier(settings['notification'])
   notifier.send_notification()
   notifier.send_notification() # this one shouldn't be sent
