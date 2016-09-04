@@ -77,17 +77,27 @@ def index():
   except Exception:
     latest_time = ''
 
+  try:
+    camera_state = current_camera_state()
+  except Exception, e:
+    flash('Error obtaining camera state: {}'.format(str(e)))
+    camera_state = ''
+
   return render_template('index.html',
-      camera_state=current_camera_state(),
+      camera_state=camera_state,
       latest_time=latest_time)
 
 @app.route('/settings')
 @requires_auth
 def settings_form():
-  camera_state = ''
-  if is_camera_enabled():
-    camera_state = 'checked'
-  return render_template('settings.html', camera_state=camera_state)
+  try:
+    camera_state = ''
+    if is_camera_enabled():
+      camera_state = 'checked'
+    return render_template('settings.html', camera_state=camera_state)
+  except Exception, e:
+    flash('Error: {}'.format(str(e)))
+    return redirect(url_for('index'))
 
 @app.route('/update-settings', methods=['POST'])
 @requires_auth
@@ -96,12 +106,12 @@ def update_settings():
   #recipients = request.form.get('recipients', '')
   #notification_limit = request.form.get('notification-limit', '60')
 
-  if current_camera_state() != requested_camera_state:
-    try:
+  try:
+    if current_camera_state() != requested_camera_state:
       set_camera_state(requested_camera_state)
       flash('Camera set to {}'.format(requested_camera_state))
-    except Exception, e:
-      flash('Error setting camera state: {}'.format(str(e)))
+  except Exception, e:
+    flash('Error setting camera state: {}'.format(str(e)))
 
   return redirect(url_for('index'))
 
