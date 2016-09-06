@@ -1,13 +1,11 @@
 from flask import Flask, flash, redirect, render_template, request, Response, url_for
 from functools import wraps
-from lockfile.pidlockfile import PIDLockFile
 import os
-from subprocess import Popen
+from subprocess import call, check_call
 import time
 import yaml
 
 basepath = os.path.dirname(os.path.realpath(__file__))
-rpisurv_path = os.path.realpath(os.path.join(basepath, '..'))
 
 with open(os.path.join(basepath, 'secrets.yaml')) as f:
   secrets = yaml.load(f)
@@ -37,24 +35,10 @@ def requires_auth(f):
   return decorated
 
 def enable_camera():
-  process = Popen([
-    '/usr/bin/env',
-    'python',
-    '-m',
-    'rpisurv.main',
-    'start'], cwd=rpisurv_path)
-  if process.wait() != 0:
-    raise CalledProcessError('Return code was not zero')
+  check_call(['sudo', 'systemctl', 'start', 'rpisurv'])
 
 def disable_camera():
-  process = Popen([
-    '/usr/bin/env',
-    'python',
-    '-m',
-    'rpisurv.main',
-    'stop'], cwd=rpisurv_path)
-  if process.wait() != 0:
-    raise CalledProcessError('Return code was not zero')
+  check_call(['sudo', 'systemctl', 'stop', 'rpisurv'])
 
 def set_camera_state(state):
   if state == 'on':
@@ -65,8 +49,7 @@ def set_camera_state(state):
     assert False
 
 def is_camera_enabled():
-  f = PIDLockFile(settings['pidfile_path'])
-  return f.is_locked()
+  return call(['systemctl', 'status', 'rpisurv']) == 0
 
 def current_camera_state():
   if is_camera_enabled():
