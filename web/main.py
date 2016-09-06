@@ -1,46 +1,28 @@
-from flask import Flask, flash, redirect, render_template, request, Response, url_for
-from functools import wraps
+from flask import Flask, flash, redirect, render_template, request, url_for
 import os
 from subprocess import call, check_call
 import time
-import yaml
 
-basepath = os.path.dirname(os.path.realpath(__file__))
-
-with open(os.path.join(basepath, 'secrets.yaml')) as f:
-  secrets = yaml.load(f)
-
-with open(os.path.join(basepath, 'settings.yaml')) as f:
-  settings = yaml.load(f)
+from auth import requires_auth
+from config import basepath, secrets, settings
 
 app = Flask(__name__)
 app.secret_key = secrets['secret_key']
 
-def check_auth(username, password):
-  return username == secrets['username'] and password == secrets['password']
-
-def authenticate():
-  return Response(
-      'Could not verify your access level for that URL.\n'
-      'You have to login with proper credentials', 401,
-      {'WWW-Authenticate': 'Basic realm="Login Required"'})
-
-def requires_auth(f):
-  @wraps(f)
-  def decorated(*args, **kwargs):
-    auth = request.authorization
-    if not auth or not check_auth(auth.username, auth.password):
-      return authenticate()
-    return f(*args, **kwargs)
-  return decorated
-
 def enable_camera():
+  """Enables the camera."""
   check_call(['sudo', 'systemctl', 'start', 'rpisurv'])
 
 def disable_camera():
+  """Disables the camera."""
   check_call(['sudo', 'systemctl', 'stop', 'rpisurv'])
 
 def set_camera_state(state):
+  """Sets the camera state.
+
+  Args:
+    state: The new camera state ['on', 'off'].
+  """
   if state == 'on':
     enable_camera()
   elif state == 'off':
@@ -49,9 +31,19 @@ def set_camera_state(state):
     assert False
 
 def is_camera_enabled():
+  """Checks whether the camera is enabled.
+
+  Returns:
+    True if the camera is enabled; False otherwise.
+  """
   return call(['systemctl', 'status', 'rpisurv']) == 0
 
 def current_camera_state():
+  """Returns the current camera state.
+
+  Returns:
+    'on' if the camera is enabled; 'off' otherwise.
+  """
   if is_camera_enabled():
     return 'on'
   else:
@@ -72,6 +64,7 @@ def index():
     flash('Error obtaining camera state: {}'.format(str(e)))
     camera_state = ''
 
+  # TODO handle the case when there is no latest image yet.
   return render_template('index.html',
       camera_state=camera_state,
       latest_time=latest_time)
