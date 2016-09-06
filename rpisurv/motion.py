@@ -34,3 +34,5 @@ class MotionDetector:
 
     return motion_detected
 
+if __name__ == '__main__':
+  from . import settings
