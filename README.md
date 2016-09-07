@@ -14,9 +14,13 @@ Detection daemon:
 * [imutils](https://pypi.python.org/pypi/imutils)
 * [picamera](http://picamera.readthedocs.io/en/latest/)
 * [Pillow](http://pillow.readthedocs.io/en/latest/)
+* [Advanced Python Scheduler](http://apscheduler.readthedocs.io/en/latest/)
 
 Web interface:
 * [Flask](http://flask.pocoo.org)
+* [Flask-Login](https://flask-login.readthedocs.io/en/latest/)
+* [Flask-WTF](https://flask-wtf.readthedocs.io/en/latest/index.html)
+* [WTForms](https://wtforms.readthedocs.io/en/latest/)
 * [uwsgi](http://uwsgi-docs.readthedocs.io/en/latest/)
 * [nginx](http://nginx.org)
 

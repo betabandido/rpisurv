@@ -1,7 +1,9 @@
-from flask import request, Response
-from functools import wraps
+from flask_login import LoginManager
+from flask_wtf import Form
+from wtforms import PasswordField, StringField
+from wtforms.validators import InputRequired
 
-from config import basepath, secrets, settings
+from . import secrets
 
 def check_auth(username, password):
   """Checks authentication values.
@@ -13,31 +15,30 @@ def check_auth(username, password):
   return username == secrets['username'] \
       and password == secrets['password']
 
-def authenticate():
-  """Returns a response letting users know they must authenticate.
-  
-  Returns:
-    The response object.
-  """
-  return Response(
-      'Could not verify your access level for that URL.\n'
-      'You have to login with proper credentials', 401,
-      {'WWW-Authenticate': 'Basic realm="Login Required"'})
+login_manager = LoginManager()
 
-def requires_auth(f):
-  """Wrapper to use in routes that require authentication.
+class User:
+  def __init__(self, username):
+    self.username = username
 
-  Args:
-    f: route function.
+  def is_authenticated(self):
+    return True
 
-  Returns:
-    The decorated route function.
-  """
-  @wraps(f)
-  def decorated(*args, **kwargs):
-    auth = request.authorization
-    if not auth or not check_auth(auth.username, auth.password):
-      return authenticate()
-    return f(*args, **kwargs)
-  return decorated
+  def is_active(self):
+    return True
+
+  def is_anonymous(self):
+    return False
+
+  def get_id(self):
+    return self.username
+
+@login_manager.user_loader
+def load_user(user_id):
+  print('load_user: {}'.format(user_id))
+  return User(user_id)
+
+class LoginForm(Form):
+  username = StringField('username', validators=[InputRequired()])
+  password = PasswordField('password', validators=[InputRequired()])
 

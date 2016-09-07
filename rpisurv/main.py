@@ -1,3 +1,4 @@
+from apscheduler.schedulers.background import BackgroundScheduler
 from backup import upload_jpeg_file
 from daemon import runner
 from motion import MotionDetector
@@ -14,7 +15,22 @@ from . import basepath, settings
 
 camera_settings = settings['camera']
 
-"""When True surveillance will stop."""
+def is_job_scheduler_needed():
+  """Checks whether we need a job scheduler.
+
+  A background job scheduler will use a background thread. So, we avoid using
+  one unless the configuration requires it.
+
+  Returns:
+    True if a job scheduler is needed; False otherwise.
+  """
+  return 'alive-notification' in settings
+
+scheduler = None
+if is_job_scheduler_needed():
+  scheduler = BackgroundScheduler()
+
+"""When set to True surveillance will stop."""
 terminated = False
 
 def terminate_surveillance():
@@ -69,6 +85,19 @@ def save_frame(frame):
   except Exception, error:
     print('Error saving frame: {}'.format(error))
 
+def schedule_alive_job(notifier):
+  """Schedules the job that sends alive notifications.
+
+  Args:
+    notifier: The motion notifier instance.
+  """
+  # TODO It might be a good idea to change MotionNotifier to something
+  # more generic such as MessageNotifier or MailNotifier.
+  if 'alive-notification' not in settings:
+    return
+
+  scheduler.add_job(notifier.send_alive, **settings['alive-notification'])
+
 def surveil():
   """Surveillance loop.
 
@@ -78,6 +107,10 @@ def surveil():
   print('Initializing')
   motion_detector = MotionDetector(settings['motion'])
   motion_notifier = MotionNotifier(settings['notification'])
+
+  schedule_alive_job(motion_notifier)
+  if scheduler:
+    scheduler.start()
 
   with create_camera() as camera:
     raw_capture = PiRGBArray(camera, size=camera.resolution)
@@ -110,6 +143,11 @@ def surveil():
           print('An error occurred: {}'.format(error))
 
       raw_capture.truncate(0)
+
+  # XXX This might not execute if an exception is thrown above.
+  # Check whether we can use 'with BackgroundScheduler(...)'
+  if scheduler:
+    scheduler.shutdown()
 
   print('Exiting')
 
