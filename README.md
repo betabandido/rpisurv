@@ -54,6 +54,6 @@ pip install oauth2client \
 ### Setting up Google credentials
 
 Run the following command:
-`python rpisurv/google.py --noauth_local_webserver`
+`python -m rpisurv.google --noauth_local_webserver`
 
 Copy and paste the link in a browser and allow for the requested permissions. Then copy and paste the code that appears on the browser back into the terminal where the previous command was executed.
