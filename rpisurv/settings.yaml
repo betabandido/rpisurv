@@ -4,8 +4,8 @@ camera:
   warmup_time: 2.5
 
 motion:
-  delta_threshold: 5
-  min_area: 1000
+  delta_threshold: 18
+  min_area: 500
   resize_width: 500
 
 notification:
