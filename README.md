@@ -44,7 +44,10 @@ pip install oauth2client \
   imutils \
   picamera \
   Pillow \
+  apscheduler \
   Flask \
+  flask-login \
+  Flask-WTF \
   uwsgi
 ```
 
