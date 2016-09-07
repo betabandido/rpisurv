@@ -52,6 +52,10 @@ def _create_message(sender, to, subject, text):
 def _build_service(credentials):
   """Build a Gmail service object.
 
+  httplib2.Http objects are not thread-safe. Therefore, each thread that
+  makes requests must use its own instance of httplib2.Http (see:
+  https://developers.google.com/api-client-library/python/guide/thread_safety).
+
   Args:
     credentials: OAuth 2.0 credentials.
 
@@ -62,6 +66,8 @@ def _build_service(credentials):
   return build('gmail', 'v1', http=http)
 
 class MotionNotifier:
+  """Class to send motion notifications."""
+  # TODO Now that is also sends alive messages, we should change its name.
   def __init__(self, settings):
     with open(os.path.join(basepath, 'mail_secrets.yaml')) as f:
       doc = yaml.load(f)
@@ -72,6 +78,7 @@ class MotionNotifier:
     self.min_distance = settings['min_distance']
 
   def send_notification(self):
+    """Sends a motion notification."""
     curr_time = datetime.now()
     if self.last_time is not None \
         and (curr_time - self.last_time).total_seconds() < self.min_distance:
@@ -82,14 +89,25 @@ class MotionNotifier:
         self.MAIL_FROM,
         self.MAIL_TO,
         'Surveillance notification',
-        'Motion detected at {0}'.format(str(datetime.now())))
+        'Motion detected at {}'.format(str(datetime.now())))
     _send_message(service, "me", msg)
 
     self.last_time = curr_time
+
+  def send_alive(self):
+    """Sends an "alive" notification."""
+    service = _build_service(get_credentials())
+    msg = _create_message(
+        self.MAIL_FROM,
+        self.MAIL_TO,
+        'Surveillance is alive',
+        'Surveillance is alive at {}'.format(str(datetime.now())))
+    _send_message(service, "me", msg)
 
 if __name__ == '__main__':
   from . import settings
   notifier = MotionNotifier(settings['notification'])
   notifier.send_notification()
   notifier.send_notification() # this one shouldn't be sent
+  notifier.send_alive()
 

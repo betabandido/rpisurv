@@ -19,3 +19,7 @@ app:
   pidfile_path: /tmp/rpisurv.pid
   web_path: ../web
 
+alive-notification:
+  trigger: interval
+  hours: 1
+
