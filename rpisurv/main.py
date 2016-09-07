@@ -7,7 +7,7 @@ import os
 from picamera import PiCamera
 from picamera.array import PiRGBArray
 from PIL import Image
-from sendmail import MotionNotifier
+from sendmail import EventNotifier
 import signal
 import sys
 from time import sleep
@@ -78,9 +78,7 @@ class SurveillanceManager:
   def __init__(self):
     print('Initializing')
     self.motion_detector = MotionDetector(settings['motion'])
-    # TODO It might be a good idea to change MotionNotifier to something
-    # more generic such as MessageNotifier or MailNotifier.
-    self.motion_notifier = MotionNotifier(settings['notification'])
+    self.event_notifier = EventNotifier(settings['notification'])
     self.scheduler = BackgroundScheduler()
     self.image_count = 0
 
@@ -107,7 +105,7 @@ class SurveillanceManager:
       sleep(camera_settings['warmup_time'])
 
       print('Surveilling')
-      self.motion_notifier.send_message('Surveillance started')
+      self.event_notifier.send_message('Surveillance started')
 
       for frame in camera.capture_continuous(
           raw_capture,
@@ -121,7 +119,7 @@ class SurveillanceManager:
         raw_capture.truncate(0)
 
     print('Exiting')
-    self.motion_notifier.send_message('Surveillance stopped')
+    self.event_notifier.send_message('Surveillance stopped')
     self.stop_job_scheduler()
 
   def schedule_alive_job(self):
@@ -134,7 +132,7 @@ class SurveillanceManager:
       return
 
     self.scheduler.add_job(
-        lambda: self.motion_notifier.send_message('Surveillance is alive'),
+        lambda: self.event_notifier.send_message('Surveillance is alive'),
         **settings['alive-notification'])
 
   def stop_job_scheduler(self):
@@ -150,7 +148,7 @@ class SurveillanceManager:
     """
     try:
       print('*** MOTION DETECTED ***')
-      self.motion_notifier.send_notification()
+      self.event_notifier.send_motion_notification()
       img = Image.fromarray(frame.array, 'RGB')
       filename = os.path.join(
           settings['backup']['output_path'],
