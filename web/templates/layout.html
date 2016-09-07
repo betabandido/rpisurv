@@ -6,6 +6,11 @@
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+{% if current_user.is_authenticated %}
+<div class="user">
+  <a href="{{ url_for('logout') }}">Log out</a>
+</div>
+{% endif %}
 <div class="container">
   {% for message in get_flashed_messages() %}
     <div class="flash">{{ message }}</div>
