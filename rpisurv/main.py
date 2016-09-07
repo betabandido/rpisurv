@@ -1,6 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from backup import upload_jpeg_file
 from daemon import runner
+import logging
 from motion import MotionDetector
 import os
 from picamera import PiCamera
@@ -13,22 +14,10 @@ from time import sleep
 
 from . import basepath, settings
 
+# APScheduler uses logging
+logging.basicConfig()
+
 camera_settings = settings['camera']
-
-def is_job_scheduler_needed():
-  """Checks whether we need a job scheduler.
-
-  A background job scheduler will use a background thread. So, we avoid using
-  one unless the configuration requires it.
-
-  Returns:
-    True if a job scheduler is needed; False otherwise.
-  """
-  return 'alive-notification' in settings
-
-scheduler = None
-if is_job_scheduler_needed():
-  scheduler = BackgroundScheduler()
 
 """When set to True surveillance will stop."""
 terminated = False
@@ -85,71 +74,101 @@ def save_frame(frame):
   except Exception, error:
     print('Error saving frame: {}'.format(error))
 
-def schedule_alive_job(notifier):
-  """Schedules the job that sends alive notifications.
+class SurveillanceManager:
+  def __init__(self):
+    print('Initializing')
+    self.motion_detector = MotionDetector(settings['motion'])
+    # TODO It might be a good idea to change MotionNotifier to something
+    # more generic such as MessageNotifier or MailNotifier.
+    self.motion_notifier = MotionNotifier(settings['notification'])
+    self.scheduler = BackgroundScheduler()
+    self.image_count = 0
 
-  Args:
-    notifier: The motion notifier instance.
-  """
-  # TODO It might be a good idea to change MotionNotifier to something
-  # more generic such as MessageNotifier or MailNotifier.
-  if 'alive-notification' not in settings:
-    return
+  def __enter__(self):
+    return self
 
-  scheduler.add_job(notifier.send_alive, **settings['alive-notification'])
+  def __exit__(self, type, value, traceback):
+    try:
+      self.stop_job_scheduler()
+    except Exception, error:
+      print('ERROR: {}'.format(error))
+
+  def surveil(self):
+    """Surveillance loop.
+
+    This method implements the surveillance loop. It only returns once
+    surveillance is requested to be stopped by calling terminate_surveillance().
+    """
+    self.schedule_alive_job()
+    self.scheduler.start()
+
+    with create_camera() as camera:
+      raw_capture = PiRGBArray(camera, size=camera.resolution)
+      sleep(camera_settings['warmup_time'])
+
+      print('Surveilling')
+      self.motion_notifier.send_message('Surveillance started')
+
+      for frame in camera.capture_continuous(
+          raw_capture,
+          format='bgr',
+          use_video_port=True):
+        if is_surveillance_terminated():
+          break
+        save_frame(frame)
+        if self.motion_detector.detect_motion(frame.array):
+          self.handle_motion_detection(frame)
+        raw_capture.truncate(0)
+
+    print('Exiting')
+    self.motion_notifier.send_message('Surveillance stopped')
+    self.stop_job_scheduler()
+
+  def schedule_alive_job(self):
+    """Schedules the job that sends alive notifications.
+
+    Args:
+      scheduler: The job scheduler.
+    """
+    if 'alive-notification' not in settings:
+      return
+
+    self.scheduler.add_job(
+        lambda: self.motion_notifier.send_message('Surveillance is alive'),
+        **settings['alive-notification'])
+
+  def stop_job_scheduler(self):
+    """Stops the job scheduler."""
+    if self.scheduler.running:
+      self.scheduler.shutdown()
+
+  def handle_motion_detection(self, frame):
+    """Handles motion detection.
+
+    Args:
+      frame: The frame to compare for movement.
+    """
+    try:
+      print('*** MOTION DETECTED ***')
+      self.motion_notifier.send_notification()
+      img = Image.fromarray(frame.array, 'RGB')
+      filename = os.path.join(
+          settings['backup']['output_path'],
+          'motion{0:04d}.jpg'.format(self.image_count))
+      img.save(filename)
+      upload_jpeg_file(filename)
+      os.remove(filename)
+      self.image_count += 1
+    except Exception, error:
+      print('ERROR: {}'.format(error))
 
 def surveil():
-  """Surveillance loop.
-
-  This method implements the surveillance loop. It only returns once
-  surveillance is requested to be stopped by calling terminate_surveillance().
-  """
-  print('Initializing')
-  motion_detector = MotionDetector(settings['motion'])
-  motion_notifier = MotionNotifier(settings['notification'])
-
-  schedule_alive_job(motion_notifier)
-  if scheduler:
-    scheduler.start()
-
-  with create_camera() as camera:
-    raw_capture = PiRGBArray(camera, size=camera.resolution)
-    sleep(camera_settings['warmup_time'])
-
-    print('Surveilling')
-    image_count = 0
-    for frame in camera.capture_continuous(
-        raw_capture,
-        format='bgr',
-        use_video_port=True):
-      if is_surveillance_terminated():
-        break
-
-      save_frame(frame)
-
-      if motion_detector.detect_motion(frame.array):
-        print('*** MOTION DETECTED ***')
-        try:
-          motion_notifier.send_notification()
-          img = Image.fromarray(frame.array, 'RGB')
-          filename = os.path.join(
-              settings['backup']['output_path'],
-              'motion{0:04d}.jpg'.format(image_count))
-          img.save(filename)
-          upload_jpeg_file(filename)
-          os.remove(filename)
-          image_count += 1
-        except Exception, error:
-          print('An error occurred: {}'.format(error))
-
-      raw_capture.truncate(0)
-
-  # XXX This might not execute if an exception is thrown above.
-  # Check whether we can use 'with BackgroundScheduler(...)'
-  if scheduler:
-    scheduler.shutdown()
-
-  print('Exiting')
+  """This method creates the surveillance manager and starts surveillance."""
+  try:
+    with SurveillanceManager() as manager:
+      manager.surveil()
+  except Exception, error:
+    print('ERROR: {}'.format(error))
 
 class Application:
   """Application class to use with daemon runner."""

@@ -94,14 +94,16 @@ class MotionNotifier:
 
     self.last_time = curr_time
 
-  def send_alive(self):
-    """Sends an "alive" notification."""
+  def send_message(self, subject, text=None):
+    """Sends a message."""
+    if text is None:
+      text = subject
     service = _build_service(get_credentials())
     msg = _create_message(
         self.MAIL_FROM,
         self.MAIL_TO,
-        'Surveillance is alive',
-        'Surveillance is alive at {}'.format(str(datetime.now())))
+        subject,
+        '{}, time:{}'.format(text, str(datetime.now())))
     _send_message(service, "me", msg)
 
 if __name__ == '__main__':
@@ -109,5 +111,5 @@ if __name__ == '__main__':
   notifier = MotionNotifier(settings['notification'])
   notifier.send_notification()
   notifier.send_notification() # this one shouldn't be sent
-  notifier.send_alive()
+  notifier.send_message('test', 'test')
 
