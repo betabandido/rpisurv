@@ -199,6 +199,15 @@ if __name__ == '__main__':
   if args.daemon:
     app = Application()
     daemon_runner = runner.DaemonRunner(app)
+    # See (https://lists.freedesktop.org/archives/systemd-devel/2014-January/016544.html)
+    # However, you must ensure that when creating a DaemonContext() object, you should
+    # specify detach_process=True. This is because, if python-daemon detects that it 
+    # is running under a init manager, it doesn’t detach itself unless the keyword is 
+    # explicitly set to True, as above (you can see the code in daemon.py). 
+    # Hence, although not setting the above keyword would work under SysV Init, it doesn’t 
+    # work under systemd (with Type=Forking), since the daemon doesn’t fork at all and 
+    # systemd expects it to fork (and finally kills it).
+    daemon_runner.daemon_context.detach_process = True
     daemon_runner.daemon_context.signal_map[signal.SIGTERM] = signal_handler
     daemon_runner.do_action()
   else:
