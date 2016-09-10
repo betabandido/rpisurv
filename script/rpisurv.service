@@ -1,0 +1,18 @@
+[Unit]
+Description=rpisurv detection module
+After=network.target
+
+[Service]
+User=pi
+Group=pi
+WorkingDirectory=<path_to_rpisurv>
+Environment="PATH=<path_to_rpisurv>/venv/bin"
+ExecStart=/usr/bin/env python -m rpisurv.main start
+ExecStop=/usr/bin/env python -m rpisurv.main stop
+ExecReload=/usr/bin/env python -m rpisurv.main restart
+Type=forking
+PIDFile=<path_to_pid_file>/rpisurv.pid
+
+[Install]
+WantedBy=multi-user.target
+

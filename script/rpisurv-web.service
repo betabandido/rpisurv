@@ -1,0 +1,14 @@
+[Unit]
+Description=uWSGI instance to serve rpisurv
+After=network.target
+
+[Service]
+User=pi
+Group=www-data
+WorkingDirectory=<path_to_rpisurv>
+Environment=PATH=<path_to_rpisurv>/venv/bin:/bin:/usr/bin
+ExecStart=/usr/bin/stdbuf -o0 <path_to_rpisurv>/venv/bin/uwsgi --ini web/main.ini
+
+[Install]
+WantedBy=multi-user.target
+
