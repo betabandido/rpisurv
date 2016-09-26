@@ -1,0 +1,13 @@
+{% block body %}
+
+The camera application needs access to parts of your google account in order to:
+
+<ul>
+  <li>Send surveillance notifications</li>
+  <li>Store images in your Google Drive</li>
+</ul>
+
+<a href="{{ url_for('google_oauth.index') }}">Configure Google Account</a>
+
+{% endblock %}
+
