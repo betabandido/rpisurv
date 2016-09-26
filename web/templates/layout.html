@@ -19,6 +19,7 @@
 {% endif %}
 <div class="container">
   <div class="errors">
+    <div class="ajaxerror"></div>
     {% for message in get_flashed_messages() %}
       <div class="flash">{{ message }}</div>
     {% endfor %}

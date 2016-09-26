@@ -9,8 +9,8 @@ $(document).ready(function() {
         function(data, status) {
           window.location = "{{ url_for('index') }}";
         }).fail(function() {
-          $(".errors").html(
-              "<div class=\"flash\">Error changing camera state</div>");
+          $(".ajaxerror").text("Error changing camera state");
+          $(".ajaxerror").show();
         });
   });
 
