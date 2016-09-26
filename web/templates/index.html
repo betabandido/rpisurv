@@ -1,12 +1,37 @@
 {% extends "layout.html" %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+  $("#toggle").click(function() {
+    $.post("{{ url_for('toggle') }}",
+        { action: "{{ toggle.action }}" },
+        function(data, status) {
+          window.location = "{{ url_for('index') }}";
+        }).fail(function() {
+          $(".errors").html(
+              "<div class=\"flash\">Error changing camera state</div>");
+        });
+  });
+
+  setInterval(function() {
+    url = "{{ url_for('static', filename='latest.jpg') }}";
+    url += "?" + (new Date()).getTime();
+    $("#shot").attr("src", url);
+  }, 5000);
+});
+</script>
+{% endblock %}
+
 {% block body %}
 
 <div class="entry">
-  <img src="static/latest.jpg">
+  <img id="shot" src="{{ url_for('static', filename='latest.jpg') }}">
 </div>
 
 <div class="entry">
-  {{ latest_time }}
+  <p>{{ latest_time }}</p>
+  <p>Refresh page to see when the latest image was taken</p>
 </div>
 
 <div class="entry">
@@ -14,8 +39,14 @@
 </div>
 
 <div class="entry">
+  <button id="toggle">{{ toggle.text }}</button>
+</div>
+
+<!--
+<div class="entry">
   <a href="{{ url_for('settings_form') }}">Change settings</a>
 </div>
+-->
 
 {% endblock %}
 

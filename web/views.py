@@ -1,5 +1,5 @@
-from flask import flash, redirect, render_template, request, url_for
-from flask_login import login_required, login_user, logout_user
+from flask import abort, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
 import os
 import time
 
@@ -42,13 +42,34 @@ def index():
   try:
     camera_state = camera.current_camera_state()
   except Exception, e:
-    flash('Error obtaining camera state: {}'.format(e))
-    camera_state = ''
+    print('Error obtaining camera state: {}'.format(e))
+    abort(500)
+
+  if camera_state == 'on':
+    toggle_action = 'off'
+    toggle_text = 'Disable camera'
+  elif camera_state == 'off':
+    toggle_action = 'on'
+    toggle_text = 'Enable camera'
+  else:
+    assert False
 
   # TODO handle the case when there is no latest image yet.
   return render_template('index.html',
       camera_state=camera_state,
-      latest_time=latest_time)
+      latest_time=latest_time,
+      toggle={'action': toggle_action, 'text': toggle_text})
+
+@app.route('/toggle', methods=['POST'])
+def toggle():
+  if not current_user.is_authenticated:
+    # This view should only be called from ajax, therefore we should not
+    # redirect to the login screen, just fail if the user is not logged in.
+    abort(401)
+
+  state = request.form.get('action')
+  camera.set_camera_state(state)
+  return ''
 
 @app.route('/settings')
 @login_required

@@ -3,7 +3,13 @@
 <head>
   <title>Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet"
+        type="text/css"
+        href="{{ url_for('static', filename='style.css') }}">
+  <script
+    src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js">
+  </script>
+  {% block scripts %}{% endblock %}
 </head>
 <body>
 {% if current_user.is_authenticated %}
@@ -12,10 +18,14 @@
 </div>
 {% endif %}
 <div class="container">
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
-  {% block body %}{% endblock %}
+  <div class="errors">
+    {% for message in get_flashed_messages() %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+  </div>
+  <div class="content">
+    {% block body %}{% endblock %}
+  </div>
 </div>
 </body>
 </html>
