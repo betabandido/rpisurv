@@ -92,6 +92,7 @@ ENV/
 client_secrets.json
 mail_secrets.yaml
 secrets.yaml
+credentials
 
 # vim
 *.swp
