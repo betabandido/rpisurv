@@ -13,7 +13,7 @@ credentials_path = 'credentials'
 scopes = ['https://www.googleapis.com/auth/drive.file']
 
 app.config['GOOGLE_OAUTH2_CLIENT_SECRETS_FILE'] = \
-    'config/client-secrets.json'
+    'config/client_secrets.json'
 app.app_context().push()
 
 storage = Storage(credentials_path)
